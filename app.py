@@ -166,8 +166,7 @@ class FacerApp:
     def _detect_loop(self):
         """Worker thread: run heavy detection on the most recent frame."""
         while not self._stop.is_set():
-            with self._lock:
-                frame = None if self._latest_frame is None else self._latest_frame.copy()
+            frame = self._grab_frame()
             if frame is None:
                 self._stop.wait(0.05)
                 continue
@@ -270,9 +269,6 @@ class FacerApp:
         if self.cap is not None:
             self.cap.release()
         self.root.destroy()
-
-
-# SPLASH_DURATION_MS = 3000
 
 
 def _show_splash(root, on_done):
