@@ -11,6 +11,7 @@ Run:
 import sys
 import threading
 
+from FacerSplash import FacerSplash
 import cv2
 from PIL import Image, ImageTk
 import tkinter as tk
@@ -271,37 +272,12 @@ class FacerApp:
         self.root.destroy()
 
 
-SPLASH_DURATION_MS = 3000
+# SPLASH_DURATION_MS = 3000
 
 
 def _show_splash(root, on_done):
-    """Show a borderless 3-second splash, then call on_done() to start the app."""
-    splash = tk.Toplevel(root)
-    splash.overrideredirect(True)  # no title bar / borders
-
-    frame = tk.Frame(splash, bg="#1e1e2e", padx=60, pady=40)
-    frame.pack(fill="both", expand=True)
-    tk.Label(
-        frame, text="Facer", bg="#1e1e2e", fg="white",
-        font=("Helvetica", 36, "bold"),
-    ).pack()
-    tk.Label(
-        frame, text="by marcohern", bg="#1e1e2e", fg="#a6adc8",
-        font=("Helvetica", 14),
-    ).pack(pady=(8, 0))
-
-    # Center on screen.
-    splash.update_idletasks()
-    w, h = splash.winfo_width(), splash.winfo_height()
-    x = (splash.winfo_screenwidth() - w) // 2
-    y = (splash.winfo_screenheight() - h) // 2
-    splash.geometry(f"+{x}+{y}")
-
-    def finish():
-        splash.destroy()
-        on_done()
-
-    root.after(SPLASH_DURATION_MS, finish)
+    splash = FacerSplash(root)
+    splash.show(on_done)
 
 
 def main():
