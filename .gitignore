@@ -1,0 +1,41 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# App data — generated at runtime, not source
+faces.db
+faces.db-journal
+faces.db-wal
+faces.db-shm
+
+# InsightFace model cache (downloaded on first run, ~300 MB)
+.insightface/
+
+# Captured / test images
+*.jpg
+*.jpeg
+*.png
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Test / coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
