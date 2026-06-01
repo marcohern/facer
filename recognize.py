@@ -10,8 +10,8 @@ import sys
 import cv2
 
 import config
-import pipeline
 from Database import db
+from Pipeline import pipeline, KnownFaces
 from VideoCaptureService import VideoCaptureService
 
 
@@ -19,7 +19,7 @@ class Recognize:
     """An always-on recognition session over the enrolled face index."""
 
     def __init__(self):
-        self.known = pipeline.KnownFaces.load()
+        self.known = KnownFaces.load()
 
     def run(self):
         print(f"Loaded {len(self.known)} encoding(s) from the database.")

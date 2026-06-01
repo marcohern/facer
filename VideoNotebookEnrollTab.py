@@ -15,8 +15,8 @@ from tkinter import ttk
 
 import cv2
 
-import pipeline
 from Database import db
+from Pipeline import pipeline, COLOR_KNOWN
 from FaceEngine import engine
 
 
@@ -74,7 +74,7 @@ class VideoNotebookEnrollTab:
         """Draw the latest face boxes onto `frame` and show it in the preview."""
         for bbox in (result or []):
             x1, y1, x2, y2 = [int(v) for v in bbox]
-            cv2.rectangle(frame, (x1, y1), (x2, y2), pipeline.COLOR_KNOWN, 2)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), COLOR_KNOWN, 2)
         self._photo = self._to_photo(frame)
         self.video.config(image=self._photo)
 

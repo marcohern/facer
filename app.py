@@ -1,7 +1,7 @@
 """Facer desktop app — enroll users and test recognition from the camera.
 
 A single Tkinter window with two tabs (Enroll / Recognize) that share one camera
-feed. All face logic is delegated to the shared `pipeline` module, so this GUI
+feed. All face logic is delegated to the shared `Pipeline` layer, so this GUI
 behaves identically to the `Enroll.py` / `Recognize.py` command-line tools.
 
 Run:
@@ -15,8 +15,8 @@ import tkinter as tk
 from tkinter import messagebox
 
 import config
-import pipeline
 from Database import db
+from Pipeline import KnownFaces
 from VideoCaptureService import VideoCaptureService
 from VideoNotebook import VideoNotebook
 
@@ -30,7 +30,7 @@ class FacerApp:
         self.root.title("Facer")
 
         db.init_db()
-        self.known = pipeline.KnownFaces.load()
+        self.known = KnownFaces.load()
 
         # Set once the window is closing, to stop the _update_frame after-loop.
         self._closing = False

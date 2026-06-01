@@ -4,7 +4,7 @@ This is the reuse layer: the rules for "store one face for a user" and "identify
 the faces in a frame" live here so the command-line tools (`Enroll.py`,
 `Recognize.py`) and the desktop app (`app.py`) can never drift apart.
 
-Only depends on the framework-agnostic backend (`config`, `database`,
+Only depends on the framework-agnostic backend (`config`, `Database`,
 `FaceEngine`) plus cv2/numpy for drawing — no GUI or CLI concerns.
 """
 
@@ -19,32 +19,6 @@ from FaceEngine import engine
 # BGR colors used for known vs. unknown faces (OpenCV uses BGR ordering).
 COLOR_KNOWN = (0, 200, 0)    # green
 COLOR_UNKNOWN = (0, 0, 255)  # red
-
-
-def capture_single_face(frame):
-    """Detect faces in a BGR frame and enforce exactly one.
-
-    Returns (face, error_message). On success `error_message` is None; on
-    failure `face` is None and `error_message` explains why.
-    """
-    faces = engine.detect(frame)
-    if len(faces) == 0:
-        return None, "No face detected."
-    if len(faces) > 1:
-        return None, f"{len(faces)} faces detected — only one person at a time."
-    return faces[0], None
-
-
-def enroll_frame(user_id, frame):
-    """Validate exactly one face in `frame` and store its embedding for `user_id`.
-
-    Returns (ok, message).
-    """
-    face, error = capture_single_face(frame)
-    if error:
-        return False, error
-    db.add_encoding(user_id, face.normed_embedding)
-    return True, "Stored 1 encoding."
 
 
 @dataclass
@@ -110,15 +84,54 @@ class KnownFaces:
         return matches
 
 
-def draw_label(frame, bbox, text, color):
-    """Draw a colored bounding box with a filled text caption onto a BGR frame."""
-    x1, y1, x2, y2 = [int(v) for v in bbox]
-    cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+class Pipeline:
+    """Stateless enrollment + drawing helpers shared by every frontend.
 
-    (tw, th), baseline = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
-    top = max(y1, th + 6)
-    cv2.rectangle(frame, (x1, top - th - 6), (x1 + tw + 6, top), color, -1)
-    cv2.putText(
-        frame, text, (x1 + 3, top - 4),
-        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2,
-    )
+    The methods are static — they hold no state, just the shared rules — but the
+    whole app calls them through the `pipeline` singleton below (mirroring
+    `FaceEngine`'s `engine` and `Database`'s `db`).
+    """
+
+    @staticmethod
+    def capture_single_face(frame):
+        """Detect faces in a BGR frame and enforce exactly one.
+
+        Returns (face, error_message). On success `error_message` is None; on
+        failure `face` is None and `error_message` explains why.
+        """
+        faces = engine.detect(frame)
+        if len(faces) == 0:
+            return None, "No face detected."
+        if len(faces) > 1:
+            return None, f"{len(faces)} faces detected — only one person at a time."
+        return faces[0], None
+
+    @staticmethod
+    def enroll_frame(user_id, frame):
+        """Validate exactly one face in `frame` and store its embedding for `user_id`.
+
+        Returns (ok, message).
+        """
+        face, error = Pipeline.capture_single_face(frame)
+        if error:
+            return False, error
+        db.add_encoding(user_id, face.normed_embedding)
+        return True, "Stored 1 encoding."
+
+    @staticmethod
+    def draw_label(frame, bbox, text, color):
+        """Draw a colored bounding box with a filled text caption onto a BGR frame."""
+        x1, y1, x2, y2 = [int(v) for v in bbox]
+        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+
+        (tw, th), baseline = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+        top = max(y1, th + 6)
+        cv2.rectangle(frame, (x1, top - th - 6), (x1 + tw + 6, top), color, -1)
+        cv2.putText(
+            frame, text, (x1 + 3, top - 4),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2,
+        )
+
+
+# Shared singleton, mirroring FaceEngine's `engine` and Database's `db`.
+pipeline = Pipeline()

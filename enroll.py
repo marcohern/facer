@@ -14,9 +14,9 @@ import sys
 import cv2
 
 import config
-import pipeline
 from Database import db
 from FaceEngine import engine
+from Pipeline import pipeline
 from VideoCaptureService import VideoCaptureService
 
 
