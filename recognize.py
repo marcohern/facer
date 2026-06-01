@@ -15,40 +15,50 @@ import pipeline
 from VideoCaptureService import VideoCaptureService
 
 
-def main():
-    database.init_db()
-    known = pipeline.KnownFaces.load()
-    print(f"Loaded {len(known)} encoding(s) from the database.")
-    if len(known) == 0:
-        print("No faces enrolled yet. Run enroll.py first; everyone will show as Unknown.")
+class Recognize:
+    """An always-on recognition session over the enrolled face index."""
 
-    # The service runs identify() continuously on its own thread, so the display
-    # loop below stays smooth without the old DETECT_EVERY_N_FRAMES throttle.
-    with VideoCaptureService(config.CAMERA_INDEX, detect_fn=known.identify) as svc:
-        if not svc.is_opened():
-            print(f"Could not open camera index {config.CAMERA_INDEX}.")
-            return 1
-        svc.start()
+    def __init__(self):
+        self.known = pipeline.KnownFaces.load()
 
-        print("Recognizer running. Press Q to quit.")
-        try:
-            while True:
-                frame = svc.latest_frame()
-                if frame is None:
+    def run(self):
+        print(f"Loaded {len(self.known)} encoding(s) from the database.")
+        if len(self.known) == 0:
+            print("No faces enrolled yet. Run Enroll.py first; everyone will show as Unknown.")
+
+        # The service runs identify() continuously on its own thread, so the
+        # display loop below stays smooth without the old DETECT_EVERY_N_FRAMES
+        # throttle.
+        with VideoCaptureService(config.CAMERA_INDEX, detect_fn=self.known.identify) as svc:
+            if not svc.is_opened():
+                print(f"Could not open camera index {config.CAMERA_INDEX}.")
+                return 1
+            svc.start()
+
+            print("Recognizer running. Press Q to quit.")
+            try:
+                while True:
+                    frame = svc.latest_frame()
+                    if frame is None:
+                        if cv2.waitKey(1) & 0xFF == ord("q"):
+                            break
+                        continue
+
+                    for m in (svc.latest_result() or []):
+                        pipeline.draw_label(frame, m.bbox, m.label, m.color)
+
+                    cv2.imshow("Face Recognition", frame)
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
-                    continue
+            finally:
+                cv2.destroyAllWindows()
 
-                for m in (svc.latest_result() or []):
-                    pipeline.draw_label(frame, m.bbox, m.label, m.color)
+        return 0
 
-                cv2.imshow("Face Recognition", frame)
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
-        finally:
-            cv2.destroyAllWindows()
 
-    return 0
+def main():
+    database.init_db()
+    return Recognize().run()
 
 
 if __name__ == "__main__":

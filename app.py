@@ -2,7 +2,7 @@
 
 A single Tkinter window with two tabs (Enroll / Recognize) that share one camera
 feed. All face logic is delegated to the shared `pipeline` module, so this GUI
-behaves identically to the `enroll.py` / `recognize.py` command-line tools.
+behaves identically to the `Enroll.py` / `Recognize.py` command-line tools.
 
 Run:
     python app.py

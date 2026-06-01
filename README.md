@@ -17,8 +17,8 @@ overlays it on the live video. Unrecognized faces are labelled **Unknown**.
 | `database.py` | SQLite layer — `users` and `face_encodings` tables. |
 | `FaceEngine.py` | InsightFace wrapper (`FaceEngine` class): detect faces, embed, cosine-match. |
 | `pipeline.py` | Shared enroll/identify logic reused by the CLI and the GUI. |
-| `enroll.py` | CLI to capture a face and link it to a user. |
-| `recognize.py` | The always-on recognition app (CLI). |
+| `Enroll.py` | CLI (`Enroll` class) to capture a face and link it to a user. |
+| `Recognize.py` | The always-on recognition app (CLI, `Recognize` class). |
 | `app.py` | Desktop GUI: enroll and test recognition in one window. |
 
 > Note: `users.csv` in this folder is sample data and is **not** used by the app.
@@ -42,19 +42,19 @@ Capture from the webcam (press **SPACE** to capture, ideally a few times from
 slightly different angles; **Q** to finish):
 
 ```bash
-python enroll.py --name "Your Name" --email you@example.com
+python Enroll.py --name "Your Name" --email you@example.com
 ```
 
 Or enroll from an existing photo (must contain exactly one face):
 
 ```bash
-python enroll.py --name "Your Name" --email you@example.com --image you.jpg
+python Enroll.py --name "Your Name" --email you@example.com --image you.jpg
 ```
 
 ## 2. Run recognition
 
 ```bash
-python recognize.py
+python Recognize.py
 ```
 
 A window opens showing the live camera. Enrolled people get a green box with

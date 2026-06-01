@@ -1,8 +1,8 @@
 """Shared enrollment + recognition logic used by both the CLI and the GUI.
 
 This is the reuse layer: the rules for "store one face for a user" and "identify
-the faces in a frame" live here so the command-line tools (`enroll.py`,
-`recognize.py`) and the desktop app (`app.py`) can never drift apart.
+the faces in a frame" live here so the command-line tools (`Enroll.py`,
+`Recognize.py`) and the desktop app (`app.py`) can never drift apart.
 
 Only depends on the framework-agnostic backend (`config`, `database`,
 `FaceEngine`) plus cv2/numpy for drawing — no GUI or CLI concerns.
