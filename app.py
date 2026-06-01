@@ -10,15 +10,15 @@ Run:
 
 import sys
 
-from FacerSplash import FacerSplash
 import tkinter as tk
 from tkinter import messagebox
 
 import config
-from Database import db
-from Pipeline import KnownFaces
-from VideoCaptureService import VideoCaptureService
-from VideoNotebook import VideoNotebook
+from facer.FacerSplash import FacerSplash
+from facer.Database import db
+from facer.Pipeline import KnownFaces
+from facer.VideoCaptureService import VideoCaptureService
+from facer.VideoNotebook import VideoNotebook
 
 # How often the display loop refreshes (milliseconds).
 FRAME_INTERVAL_MS = 30

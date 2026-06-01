@@ -13,8 +13,8 @@ from dataclasses import dataclass
 import cv2
 
 import config
-from Database import db
-from FaceEngine import engine
+from .Database import db
+from .FaceEngine import engine
 
 # BGR colors used for known vs. unknown faces (OpenCV uses BGR ordering).
 COLOR_KNOWN = (0, 200, 0)    # green

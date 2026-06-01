@@ -11,15 +11,18 @@ overlays it on the live video. Unrecognized faces are labelled **Unknown**.
 
 ## Project layout
 
+The library modules live in the `facer/` package; `config.py` and `app.py` stay
+at the repo root. Run all commands from the repo root.
+
 | File | Purpose |
 |------|---------|
 | `config.py` | Settings: DB path, camera index, recognition threshold, etc. |
-| `Database.py` | SQLite layer (`Database` class) — `users` and `face_encodings` tables. |
-| `FaceEngine.py` | InsightFace wrapper (`FaceEngine` class): detect faces, embed, cosine-match. |
-| `Pipeline.py` | Shared enroll/identify logic (`Pipeline`, `KnownFaces`) reused by the CLI and the GUI. |
-| `Enroll.py` | CLI (`Enroll` class) to capture a face and link it to a user. |
-| `Recognize.py` | The always-on recognition app (CLI, `Recognize` class). |
 | `app.py` | Desktop GUI: enroll and test recognition in one window. |
+| `facer/Database.py` | SQLite layer (`Database` class) — `users` and `face_encodings` tables. |
+| `facer/FaceEngine.py` | InsightFace wrapper (`FaceEngine` class): detect faces, embed, cosine-match. |
+| `facer/Pipeline.py` | Shared enroll/identify logic (`Pipeline`, `KnownFaces`) reused by the CLI and the GUI. |
+| `facer/Enroll.py` | CLI (`Enroll` class) to capture a face and link it to a user. |
+| `facer/Recognize.py` | The always-on recognition app (CLI, `Recognize` class). |
 
 > Note: `users.csv` in this folder is sample data and is **not** used by the app.
 
@@ -42,19 +45,19 @@ Capture from the webcam (press **SPACE** to capture, ideally a few times from
 slightly different angles; **Q** to finish):
 
 ```bash
-python Enroll.py --name "Your Name" --email you@example.com
+python -m facer.Enroll --name "Your Name" --email you@example.com
 ```
 
 Or enroll from an existing photo (must contain exactly one face):
 
 ```bash
-python Enroll.py --name "Your Name" --email you@example.com --image you.jpg
+python -m facer.Enroll --name "Your Name" --email you@example.com --image you.jpg
 ```
 
 ## 2. Run recognition
 
 ```bash
-python Recognize.py
+python -m facer.Recognize
 ```
 
 A window opens showing the live camera. Enrolled people get a green box with

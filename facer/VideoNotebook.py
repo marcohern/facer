@@ -16,8 +16,8 @@ from tkinter import ttk
 import cv2
 from PIL import Image, ImageTk
 
-from VideoNotebookEnrollTab import VideoNotebookEnrollTab
-from VideoNotebookRecognizeTab import VideoNotebookRecognizeTab
+from .VideoNotebookEnrollTab import VideoNotebookEnrollTab
+from .VideoNotebookRecognizeTab import VideoNotebookRecognizeTab
 
 
 def to_photo(frame_bgr):

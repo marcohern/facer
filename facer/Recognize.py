@@ -10,9 +10,9 @@ import sys
 import cv2
 
 import config
-from Database import db
-from Pipeline import pipeline, KnownFaces
-from VideoCaptureService import VideoCaptureService
+from .Database import db
+from .Pipeline import pipeline, KnownFaces
+from .VideoCaptureService import VideoCaptureService
 
 
 class Recognize:

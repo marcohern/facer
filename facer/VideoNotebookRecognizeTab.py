@@ -13,7 +13,7 @@ Composition over subclassing (mirrors FacerSplash): the tab content lives on
 import tkinter as tk
 from tkinter import ttk
 
-from Pipeline import pipeline
+from .Pipeline import pipeline
 
 
 class VideoNotebookRecognizeTab:
