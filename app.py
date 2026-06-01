@@ -9,7 +9,6 @@ Run:
 """
 
 import sys
-import threading
 
 from FacerSplash import FacerSplash
 import cv2
@@ -21,6 +20,7 @@ import config
 import database
 import face_engine
 import pipeline
+from VideoCaptureService import VideoCaptureService
 
 # How often the display loop refreshes (milliseconds).
 FRAME_INTERVAL_MS = 30
@@ -34,40 +34,38 @@ class FacerApp:
         database.init_db()
         self.known = pipeline.KnownFaces.load()
 
-        # Shared state between the UI thread and the detection worker.
-        self._lock = threading.Lock()
-        self._latest_frame = None          # most recent BGR frame from the camera
-        self._enroll_boxes = []            # list of bbox for the Enroll preview
-        self._recognize_matches = []       # list of pipeline.Match for Recognize
-        self._stop = threading.Event()
+        # Set once the window is closing, to stop the _update_frame after-loop.
+        self._closing = False
 
         # Enrollment session state.
         self._current_user_id = None
         self._captured = 0
 
-        # Active tab name, mirrored as a plain string so the worker thread never
-        # has to call into (non-thread-safe) Tkinter. Updated on the UI thread.
+        # Active tab name, mirrored as a plain string so the detect callbacks
+        # never have to call into (non-thread-safe) Tkinter.
         self._active_mode = "Enroll"
 
         # Keep references to PhotoImages so Tk doesn't garbage-collect them.
         self._enroll_photo = None
         self._recognize_photo = None
 
-        self.cap = cv2.VideoCapture(config.CAMERA_INDEX)
-        if not self.cap.isOpened():
+        # The service owns the camera + its detection thread; we start in Enroll
+        # mode (draw face boxes) and swap the callback on tab change.
+        self.service = VideoCaptureService(
+            config.CAMERA_INDEX, detect_fn=self._enroll_detect
+        )
+        if not self.service.is_opened():
             messagebox.showerror(
                 "Camera error",
                 f"Could not open camera index {config.CAMERA_INDEX}.\n"
                 "Check that a webcam is connected and not in use by another app.",
             )
-            self.cap = None
 
         self._build_ui()
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
-        if self.cap is not None:
-            self._worker = threading.Thread(target=self._detect_loop, daemon=True)
-            self._worker.start()
+        if self.service.is_opened():
+            self.service.start()
             self.root.after(FRAME_INTERVAL_MS, self._update_frame)
 
     # ----- UI construction -------------------------------------------------
@@ -81,7 +79,7 @@ class FacerApp:
 
         self.notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
 
-        if self.cap is None:
+        if not self.service.is_opened():
             # No camera: leave the tabs visible but inert.
             self.enroll_status.config(text="Camera unavailable.")
             self.recognize_status.config(text="Camera unavailable.")
@@ -139,46 +137,34 @@ class FacerApp:
 
     def _update_frame(self):
         """UI-thread loop: grab a frame, overlay results, show in active tab."""
-        if self.cap is None or self._stop.is_set():
+        if self._closing or not self.service.is_opened():
             return
 
-        ok, frame = self.cap.read()
-        if ok:
-            with self._lock:
-                self._latest_frame = frame.copy()
-                enroll_boxes = list(self._enroll_boxes)
-                matches = list(self._recognize_matches)
+        frame = self.service.latest_frame()
+        if frame is not None:
+            result = self.service.latest_result()
 
             if self._active_mode == "Enroll":
-                for bbox in enroll_boxes:
+                for bbox in (result or []):
                     x1, y1, x2, y2 = [int(v) for v in bbox]
                     cv2.rectangle(frame, (x1, y1), (x2, y2), pipeline.COLOR_KNOWN, 2)
                 self._enroll_photo = self._to_photo(frame)
                 self.enroll_video.config(image=self._enroll_photo)
             else:
-                for m in matches:
+                for m in (result or []):
                     pipeline.draw_label(frame, m.bbox, m.label, m.color)
                 self._recognize_photo = self._to_photo(frame)
                 self.recognize_video.config(image=self._recognize_photo)
 
         self.root.after(FRAME_INTERVAL_MS, self._update_frame)
 
-    def _detect_loop(self):
-        """Worker thread: run heavy detection on the most recent frame."""
-        while not self._stop.is_set():
-            frame = self._grab_frame()
-            if frame is None:
-                self._stop.wait(0.05)
-                continue
+    # Detection callbacks handed to the service; each returns the result the
+    # matching branch of _update_frame knows how to draw.
+    def _enroll_detect(self, frame):
+        return [f.bbox for f in face_engine.detect(frame)]
 
-            if self._active_mode == "Enroll":
-                boxes = [f.bbox for f in face_engine.detect(frame)]
-                with self._lock:
-                    self._enroll_boxes = boxes
-            else:
-                matches = self.known.identify(frame)
-                with self._lock:
-                    self._recognize_matches = matches
+    def _recognize_detect(self, frame):
+        return self.known.identify(frame)
 
     @staticmethod
     def _to_photo(frame_bgr):
@@ -186,8 +172,7 @@ class FacerApp:
         return ImageTk.PhotoImage(Image.fromarray(rgb))
 
     def _grab_frame(self):
-        with self._lock:
-            return None if self._latest_frame is None else self._latest_frame.copy()
+        return self.service.latest_frame()
 
     # ----- enroll actions ---------------------------------------------------
 
@@ -230,9 +215,13 @@ class FacerApp:
 
     def _on_tab_changed(self, _event):
         self._active_mode = self._active_tab()
-        # Reload the index when entering Recognize so faces just enrolled count.
+        # Reload the index when entering Recognize so faces just enrolled count,
+        # then swap the service's detection to match the active tab.
         if self._active_mode == "Recognize":
             self.known.reload()
+            self.service.set_detect_fn(self._recognize_detect)
+        else:
+            self.service.set_detect_fn(self._enroll_detect)
 
     def _on_capture_result(self):
         frame = self._grab_frame()
@@ -263,11 +252,8 @@ class FacerApp:
     # ----- shutdown ---------------------------------------------------------
 
     def _on_close(self):
-        self._stop.set()
-        if getattr(self, "_worker", None) is not None:
-            self._worker.join(timeout=1.0)
-        if self.cap is not None:
-            self.cap.release()
+        self._closing = True
+        self.service.stop()
         self.root.destroy()
 
 

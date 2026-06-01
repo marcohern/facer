@@ -21,6 +21,8 @@ MODEL_NAME = "buffalo_l"
 # otherwise CPU). Set to -1 to force CPU.
 CTX_ID = 0
 
-# Run heavy detection/recognition only every Nth frame to keep the window smooth.
-# Frames in between reuse the last results.
+# Historically: run heavy detection only every Nth frame to keep the window
+# smooth. No longer consumed — VideoCaptureService runs detection continuously on
+# its own thread, so the display loop stays smooth without frame-skipping. Kept
+# for reference / potential reuse.
 DETECT_EVERY_N_FRAMES = 3

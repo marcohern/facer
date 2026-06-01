@@ -12,6 +12,7 @@ import cv2
 import config
 import database
 import pipeline
+from VideoCaptureService import VideoCaptureService
 
 
 def main():
@@ -21,36 +22,31 @@ def main():
     if len(known) == 0:
         print("No faces enrolled yet. Run enroll.py first; everyone will show as Unknown.")
 
-    cap = cv2.VideoCapture(config.CAMERA_INDEX)
-    if not cap.isOpened():
-        print(f"Could not open camera index {config.CAMERA_INDEX}.")
-        return 1
+    # The service runs identify() continuously on its own thread, so the display
+    # loop below stays smooth without the old DETECT_EVERY_N_FRAMES throttle.
+    with VideoCaptureService(config.CAMERA_INDEX, detect_fn=known.identify) as svc:
+        if not svc.is_opened():
+            print(f"Could not open camera index {config.CAMERA_INDEX}.")
+            return 1
+        svc.start()
 
-    frame_count = 0
-    last_matches = []  # list of pipeline.Match, reused between detection frames
+        print("Recognizer running. Press Q to quit.")
+        try:
+            while True:
+                frame = svc.latest_frame()
+                if frame is None:
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
+                    continue
 
-    print("Recognizer running. Press Q to quit.")
-    try:
-        while True:
-            ok, frame = cap.read()
-            if not ok:
-                # Keep the loop alive even if a frame read fails — the camera
-                # should stay "always on".
-                continue
+                for m in (svc.latest_result() or []):
+                    pipeline.draw_label(frame, m.bbox, m.label, m.color)
 
-            frame_count += 1
-            if frame_count % config.DETECT_EVERY_N_FRAMES == 0:
-                last_matches = known.identify(frame)
-
-            for m in last_matches:
-                pipeline.draw_label(frame, m.bbox, m.label, m.color)
-
-            cv2.imshow("Face Recognition", frame)
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
-    finally:
-        cap.release()
-        cv2.destroyAllWindows()
+                cv2.imshow("Face Recognition", frame)
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+        finally:
+            cv2.destroyAllWindows()
 
     return 0
 
