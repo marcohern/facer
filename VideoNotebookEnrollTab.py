@@ -16,8 +16,8 @@ from tkinter import ttk
 import cv2
 
 import database
-import face_engine
 import pipeline
+from FaceEngine import engine
 
 
 class VideoNotebookEnrollTab:
@@ -68,7 +68,7 @@ class VideoNotebookEnrollTab:
 
     def detect(self, frame):
         """Background detection: face boxes for the live preview."""
-        return [f.bbox for f in face_engine.detect(frame)]
+        return [f.bbox for f in engine.detect(frame)]
 
     def render(self, frame, result):
         """Draw the latest face boxes onto `frame` and show it in the preview."""

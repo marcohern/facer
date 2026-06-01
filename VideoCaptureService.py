@@ -10,7 +10,7 @@ The detection callback is swappable at runtime (`set_detect_fn`), which lets a
 single service back several modes (e.g. the GUI's Enroll vs. Recognize tabs)
 without the service knowing anything about what detection means.
 
-Depends only on cv2 / threading / config — never on `face_engine` or
+Depends only on cv2 / threading / config — never on `FaceEngine` or
 `pipeline`, so it stays decoupled from any particular detection logic.
 """
 

@@ -15,8 +15,8 @@ import cv2
 
 import config
 import database
-import face_engine
 import pipeline
+from FaceEngine import engine
 from VideoCaptureService import VideoCaptureService
 
 
@@ -34,7 +34,7 @@ def enroll_from_image(user_id, path):
 def enroll_from_camera(user_id):
     # The detect thread supplies live face boxes for the overlay; SPACE enrolls
     # the latest frame (enroll_frame re-detects on it, so the count is exact).
-    with VideoCaptureService(config.CAMERA_INDEX, detect_fn=face_engine.detect) as svc:
+    with VideoCaptureService(config.CAMERA_INDEX, detect_fn=engine.detect) as svc:
         if not svc.is_opened():
             print(f"Could not open camera index {config.CAMERA_INDEX}.")
             return 0

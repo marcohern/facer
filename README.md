@@ -15,7 +15,7 @@ overlays it on the live video. Unrecognized faces are labelled **Unknown**.
 |------|---------|
 | `config.py` | Settings: DB path, camera index, recognition threshold, etc. |
 | `database.py` | SQLite layer — `users` and `face_encodings` tables. |
-| `face_engine.py` | InsightFace wrapper: detect faces, embed, cosine-match. |
+| `FaceEngine.py` | InsightFace wrapper (`FaceEngine` class): detect faces, embed, cosine-match. |
 | `pipeline.py` | Shared enroll/identify logic reused by the CLI and the GUI. |
 | `enroll.py` | CLI to capture a face and link it to a user. |
 | `recognize.py` | The always-on recognition app (CLI). |

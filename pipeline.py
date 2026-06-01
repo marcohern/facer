@@ -5,7 +5,7 @@ the faces in a frame" live here so the command-line tools (`enroll.py`,
 `recognize.py`) and the desktop app (`app.py`) can never drift apart.
 
 Only depends on the framework-agnostic backend (`config`, `database`,
-`face_engine`) plus cv2/numpy for drawing — no GUI or CLI concerns.
+`FaceEngine`) plus cv2/numpy for drawing — no GUI or CLI concerns.
 """
 
 from dataclasses import dataclass
@@ -14,7 +14,7 @@ import cv2
 
 import config
 import database
-import face_engine
+from FaceEngine import engine
 
 # BGR colors used for known vs. unknown faces (OpenCV uses BGR ordering).
 COLOR_KNOWN = (0, 200, 0)    # green
@@ -27,7 +27,7 @@ def capture_single_face(frame):
     Returns (face, error_message). On success `error_message` is None; on
     failure `face` is None and `error_message` explains why.
     """
-    faces = face_engine.detect(frame)
+    faces = engine.detect(frame)
     if len(faces) == 0:
         return None, "No face detected."
     if len(faces) > 1:
@@ -94,8 +94,8 @@ class KnownFaces:
             threshold = config.RECOGNITION_THRESHOLD
 
         matches = []
-        for face in face_engine.detect(frame):
-            user_id, score = face_engine.cosine_match(
+        for face in engine.detect(frame):
+            user_id, score = engine.cosine_match(
                 face.normed_embedding, self._matrix, self._user_ids, threshold,
             )
             if user_id is not None:
