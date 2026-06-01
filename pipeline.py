@@ -13,7 +13,7 @@ from dataclasses import dataclass
 import cv2
 
 import config
-import database
+from Database import db
 from FaceEngine import engine
 
 # BGR colors used for known vs. unknown faces (OpenCV uses BGR ordering).
@@ -43,7 +43,7 @@ def enroll_frame(user_id, frame):
     face, error = capture_single_face(frame)
     if error:
         return False, error
-    database.add_encoding(user_id, face.normed_embedding)
+    db.add_encoding(user_id, face.normed_embedding)
     return True, "Stored 1 encoding."
 
 
@@ -72,12 +72,12 @@ class KnownFaces:
 
     @classmethod
     def load(cls):
-        matrix, user_ids = database.load_all_encodings()
+        matrix, user_ids = db.load_all_encodings()
         return cls(matrix, user_ids)
 
     def reload(self):
         """Reload all embeddings from the database (e.g. after enrolling)."""
-        self._matrix, self._user_ids = database.load_all_encodings()
+        self._matrix, self._user_ids = db.load_all_encodings()
         self._user_cache.clear()
 
     def __len__(self):
@@ -85,7 +85,7 @@ class KnownFaces:
 
     def _resolve_user(self, user_id):
         if user_id not in self._user_cache:
-            self._user_cache[user_id] = database.get_user(user_id)
+            self._user_cache[user_id] = db.get_user(user_id)
         return self._user_cache[user_id]
 
     def identify(self, frame, threshold=None):

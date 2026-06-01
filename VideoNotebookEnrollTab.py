@@ -15,8 +15,8 @@ from tkinter import ttk
 
 import cv2
 
-import database
 import pipeline
+from Database import db
 from FaceEngine import engine
 
 
@@ -95,7 +95,7 @@ class VideoNotebookEnrollTab:
                 self.status.config(text="Enter a name before capturing.")
                 return
             email = self.email_var.get().strip() or None
-            self._current_user_id = database.add_user(name, email)
+            self._current_user_id = db.add_user(name, email)
             self._captured = 0
             self.name_entry.config(state="disabled")
             self.email_entry.config(state="disabled")

@@ -15,8 +15,8 @@ import tkinter as tk
 from tkinter import messagebox
 
 import config
-import database
 import pipeline
+from Database import db
 from VideoCaptureService import VideoCaptureService
 from VideoNotebook import VideoNotebook
 
@@ -29,7 +29,7 @@ class FacerApp:
         self.root = root
         self.root.title("Facer")
 
-        database.init_db()
+        db.init_db()
         self.known = pipeline.KnownFaces.load()
 
         # Set once the window is closing, to stop the _update_frame after-loop.

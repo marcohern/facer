@@ -14,8 +14,8 @@ import sys
 import cv2
 
 import config
-import database
 import pipeline
+from Database import db
 from FaceEngine import engine
 from VideoCaptureService import VideoCaptureService
 
@@ -30,7 +30,7 @@ class Enroll:
     def __init__(self, name, email=None):
         self.name = name
         self.email = email
-        self.user_id = database.add_user(name, email)
+        self.user_id = db.add_user(name, email)
         self.captured = 0
 
     def from_image(self, path):
@@ -93,7 +93,7 @@ class Enroll:
         return self.captured
 
     def encoding_count(self):
-        return database.count_encodings(self.user_id)
+        return db.count_encodings(self.user_id)
 
 
 def main():
@@ -106,7 +106,7 @@ def main():
     )
     args = parser.parse_args()
 
-    database.init_db()
+    db.init_db()
     enroller = Enroll(args.name, args.email)
     print(f"User '{enroller.name}' has id {enroller.user_id}.")
 

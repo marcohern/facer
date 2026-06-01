@@ -10,8 +10,8 @@ import sys
 import cv2
 
 import config
-import database
 import pipeline
+from Database import db
 from VideoCaptureService import VideoCaptureService
 
 
@@ -57,7 +57,7 @@ class Recognize:
 
 
 def main():
-    database.init_db()
+    db.init_db()
     return Recognize().run()
 
 
