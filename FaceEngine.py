@@ -1,5 +1,7 @@
 """InsightFace wrapper: face detection, embeddings, and cosine matching."""
 
+import os
+
 import numpy as np
 
 import config
@@ -14,10 +16,11 @@ class FaceEngine:
     """
 
     def __init__(self, model_name=config.MODEL_NAME, ctx_id=config.CTX_ID,
-                 det_size=config.DET_SIZE):
+                 det_size=config.DET_SIZE, providers=config.PROVIDERS):
         self._model_name = model_name
         self._ctx_id = ctx_id
         self._det_size = det_size
+        self._providers = providers
         self._app = None
 
     def _get_app(self):
@@ -25,14 +28,58 @@ class FaceEngine:
         if self._app is None:
             # Imported here so simply importing this module (e.g. for tests)
             # does not pull in the heavy InsightFace/ONNX stack until it's used.
+            import onnxruntime as ort
+
+            # The CUDA/cuDNN runtime libraries come from the nvidia-* pip
+            # wheels. Add their bin directories to the DLL search path so
+            # onnxruntime — and cuDNN 9, which lazily loads sublibrary DLLs by
+            # name at runtime — can find them. Without this, cuDNN reports
+            # SUBLIBRARY_LOADING_FAILED and ORT silently falls back to CPU.
+            self._add_cuda_dll_dirs()
+            try:
+                ort.preload_dlls()
+            except AttributeError:
+                pass
+
             from insightface.app import FaceAnalysis
 
-            app = FaceAnalysis(
-                name=self._model_name, providers=['CPUExecutionProvider']
-            )
+            app = FaceAnalysis(name=self._model_name, providers=self._providers)
             app.prepare(ctx_id=self._ctx_id, det_size=self._det_size)
             self._app = app
+
+            # Report which providers actually got bound, so it's obvious at
+            # startup whether CUDA was selected or it fell back to CPU.
+            model = next(iter(app.models.values()), None)
+            active = model.session.get_providers() if model is not None else self._providers
+            print(f"[FaceEngine] ONNX Runtime providers in use: {active}")
         return self._app
+
+    @staticmethod
+    def _add_cuda_dll_dirs():
+        """Put the nvidia-* wheel bin directories on the Windows DLL path.
+
+        No-op on platforms without `os.add_dll_directory` (non-Windows) or when
+        the nvidia CUDA wheels aren't installed (e.g. a CPU-only setup).
+        """
+        if not hasattr(os, "add_dll_directory"):
+            return
+        try:
+            import nvidia
+        except ImportError:
+            return
+        import glob
+
+        base = os.path.dirname(nvidia.__file__)
+        for bindir in glob.glob(os.path.join(base, "*", "bin")):
+            try:
+                os.add_dll_directory(bindir)
+            except OSError:
+                pass
+            # cuDNN 9 loads its engine plugin sublibraries (e.g.
+            # cudnn_engines_*) by bare name via a loader that searches PATH, so
+            # add_dll_directory alone isn't enough — prepend to PATH too.
+            if bindir not in os.environ.get("PATH", "").split(os.pathsep):
+                os.environ["PATH"] = bindir + os.pathsep + os.environ.get("PATH", "")
 
     def detect(self, frame_bgr):
         """Detect faces in a BGR frame.

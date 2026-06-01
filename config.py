@@ -17,9 +17,14 @@ DET_SIZE = (640, 640)
 # Model pack name downloaded automatically by InsightFace on first run.
 MODEL_NAME = "buffalo_l"
 
-# ctx_id for InsightFace: 0 uses the first available provider (GPU if present,
-# otherwise CPU). Set to -1 to force CPU.
+# ctx_id for InsightFace: 0 uses the first available provider (CUDA / provider 0
+# if present, otherwise CPU). Set to -1 to force CPU.
 CTX_ID = 0
+
+# ONNX Runtime execution providers, in priority order. CUDA first, CPU as
+# fallback so the app still runs if the GPU stack is missing. Requires the
+# onnxruntime-gpu package; plain onnxruntime exposes only CPU.
+PROVIDERS = ["CUDAExecutionProvider", "CPUExecutionProvider"]
 
 # Historically: run heavy detection only every Nth frame to keep the window
 # smooth. No longer consumed — VideoCaptureService runs detection continuously on

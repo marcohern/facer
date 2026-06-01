@@ -1,5 +1,15 @@
+# NOTE: insightface depends on `onnxruntime` (CPU), which shares the same
+# `onnxruntime` package folder as `onnxruntime-gpu` — installing both leaves
+# whichever landed last, so the CPU build can clobber the GPU one. If GPU stops
+# working after an install, run:  pip uninstall -y onnxruntime onnxruntime-gpu
+# then:  pip install onnxruntime-gpu   (gpu build also satisfies insightface).
 insightface
-onnxruntime
+onnxruntime-gpu
+nvidia-cuda-runtime-cu12
+nvidia-cudnn-cu12
+nvidia-cublas-cu12
+nvidia-cufft-cu12
+nvidia-curand-cu12
 opencv-python
 numpy
 pillow
