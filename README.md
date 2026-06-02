@@ -20,7 +20,7 @@ at the repo root. Run all commands from the repo root.
 | `app.py` | Desktop GUI: enroll and test recognition in one window. |
 | `facer/Database.py` | SQLite layer (`Database` class) — `users` and `face_encodings` tables. |
 | `facer/FaceEngine.py` | InsightFace wrapper (`FaceEngine` class): detect faces, embed, cosine-match. |
-| `facer/Pipeline.py` | Shared enroll/identify logic (`Pipeline`, `KnownFaces`) reused by the CLI and the GUI. |
+| `facer/VideoCapturePipeline.py` | Shared enroll/identify logic (`VideoCapturePipeline`, `KnownFaces`) reused by the CLI and the GUI. |
 | `facer/Enroll.py` | CLI (`Enroll` class) to capture a face and link it to a user. |
 | `facer/Recognize.py` | The always-on recognition app (CLI, `Recognize` class). |
 

@@ -84,7 +84,7 @@ class KnownFaces:
         return matches
 
 
-class Pipeline:
+class VideoCapturePipeline:
     """Stateless enrollment + drawing helpers shared by every frontend.
 
     The methods are static — they hold no state, just the shared rules — but the
@@ -112,7 +112,7 @@ class Pipeline:
 
         Returns (ok, message).
         """
-        face, error = Pipeline.capture_single_face(frame)
+        face, error = VideoCapturePipeline.capture_single_face(frame)
         if error:
             return False, error
         db.add_encoding(user_id, face.normed_embedding)
@@ -134,4 +134,4 @@ class Pipeline:
 
 
 # Shared singleton, mirroring FaceEngine's `engine` and Database's `db`.
-pipeline = Pipeline()
+pipeline = VideoCapturePipeline()

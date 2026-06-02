@@ -11,7 +11,7 @@ single service back several modes (e.g. the GUI's Enroll vs. Recognize tabs)
 without the service knowing anything about what detection means.
 
 Depends only on cv2 / threading / config — never on `FaceEngine` or
-`Pipeline`, so it stays decoupled from any particular detection logic.
+`VideoCapturePipeline`, so it stays decoupled from any particular detection logic.
 """
 
 import threading

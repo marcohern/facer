@@ -1,7 +1,7 @@
 """Facer desktop app — enroll users and test recognition from the camera.
 
 A single Tkinter window with two tabs (Enroll / Recognize) that share one camera
-feed. All face logic is delegated to the shared `Pipeline` layer, so this GUI
+feed. All face logic is delegated to the shared `VideoCapturePipeline` layer, so this GUI
 behaves identically to the `Enroll.py` / `Recognize.py` command-line tools.
 
 Run:

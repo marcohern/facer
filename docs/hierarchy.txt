@@ -1,6 +1,6 @@
 FacerApp
 +- Database
-+- Pipeline
++- VideoCapturePipeline
    +- Database
    +- FaceEngine
 +- VideoCaptureService

@@ -16,7 +16,7 @@ from tkinter import ttk
 import cv2
 
 from .Database import db
-from .Pipeline import pipeline, COLOR_KNOWN
+from .VideoCapturePipeline import pipeline, COLOR_KNOWN
 from .FaceEngine import engine
 
 

@@ -9,7 +9,7 @@ from tkinter import messagebox
 
 import config
 from .Database import db
-from .Pipeline import KnownFaces
+from .VideoCapturePipeline import KnownFaces
 from .VideoCaptureService import VideoCaptureService
 from .VideoNotebook import VideoNotebook
 

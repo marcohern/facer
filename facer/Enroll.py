@@ -16,7 +16,7 @@ import cv2
 import config
 from .Database import db
 from .FaceEngine import engine
-from .Pipeline import pipeline
+from .VideoCapturePipeline import pipeline
 from .VideoCaptureService import VideoCaptureService
 
 
