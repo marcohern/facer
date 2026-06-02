@@ -1,0 +1,7 @@
+FacerApp
++- Database
++- Pipeline
+   +- Database
+   +- FaceEngine
++- VideoCaptureService
++- VideoNotebook
